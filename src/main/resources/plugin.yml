@@ -1,0 +1,38 @@
+name: HMCCosmeticsRP
+version: '1.0'
+main: gg.bckd00r.community.plugin.HMCCosmeticsRP.HMCCosmeticsPackPlugin
+api-version: '1.21'
+authors: [ bckd00r ]
+description: HMCCosmetics resourcepack creator plugin.
+
+commands:
+  hmcpack:
+    description: Main command for HMCCosmeticsRP
+    usage: |
+      /hmcpack generate - Generate resource pack and YML configs from .bbmodel files
+      /hmcpack reload - Reload the plugin configuration
+      /hmcpack data <list|show|set|reset> - Manage model display settings in data.yml
+    permission: hmcpack.use
+    permission-message: "&cYou don't have permission to use this command!"
+
+permissions:
+  hmcpack.use:
+    description: Allows access to the main hmcpack command
+    default: op
+  hmcpack.generate:
+    description: Allows generating resource pack and YML configs from .bbmodel files
+    default: op
+  hmcpack.reload:
+    description: Allows reloading the plugin configuration
+    default: op
+  hmcpack.data:
+    description: Allows managing model display settings in data.yml
+    default: op
+  hmcpack.*:
+    description: Gives access to all HMCCosmeticsRP commands
+    default: op
+    children:
+      hmcpack.use: true
+      hmcpack.generate: true
+      hmcpack.reload: true
+      hmcpack.data: true

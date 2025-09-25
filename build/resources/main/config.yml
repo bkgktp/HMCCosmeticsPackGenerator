@@ -1,0 +1,37 @@
+debug: false
+# BBModel to Minecraft JSON Converter Configuration
+
+# Resource pack settings
+resource-pack:
+  # The ID of your resource pack (used in the output directory structure)
+  id: 'HMCCosmetics'
+
+  # The namespace to use for models and textures (e.g., 'hmc' will use 'hmc:item/...' paths)
+  namespace: 'hmc'
+
+# Output settings
+# Uncomment and modify the 'custom-output-path' to specify a custom output directory
+# If left commented, the default will be 'plugins/HMCCosmeticsRP/output/'
+
+# Custom path to copy the generated pack to (leave empty to disable)
+output:
+  custom-path: ''
+
+# Item model settings
+settings:
+  # Whether to use item model components for custom models
+  use-item-model-component: true
+  
+  # Custom model data settings
+  custom-model-data:
+    start-value: 1000  # Starting value for custom model data
+  
+  # Default materials for each cosmetic type
+  default-materials:
+    HELMET: LEATHER_HORSE_ARMOR
+    CHESTPLATE: LEATHER_HORSE_ARMOR
+    LEGGINGS: LEATHER_HORSE_ARMOR
+    BOOTS: LEATHER_HORSE_ARMOR
+    BACKPACK: LEATHER_HORSE_ARMOR
+    BALLOON: LEATHER_HORSE_ARMOR
+    OFFHAND: LEATHER_HORSE_ARMOR
