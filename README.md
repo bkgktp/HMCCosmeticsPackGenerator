@@ -136,45 +136,17 @@ settings:
 
 ⚠️ **Important Warning**: When set to `true`, this will **overwrite existing files** in `HMCCosmetics/cosmetics/` folder. Any manual changes you made to cosmetic YML files will be lost. Use `/hmcpack senddata` command for safer manual transfer if you have custom modifications.
 
-#### 2. **Local File System Transfer**
+#### 2. **Local Directory Transfer**
 ```yaml
 resource-pack:
-  transfer-to-path: '/path/to/your/local/directory/'
+  transfer-to-path: '/path/to/directory/'
 ```
-- Automatically copies the entire resource pack to specified **local file system path**
-- This is a **local computer path**, not a plugin directory
-- Useful for copying to external folders, backup locations, or file sharing directories
+- Copies resource pack to a local directory on your computer
 - Leave empty (`''`) to disable
 
-### Transfer Examples
-
-#### Example 1: Local Backup Directory
-```yaml
-resource-pack:
-  transfer-to-path: '/home/user/minecraft-backups/resourcepacks/'
-```
-Copy resource pack to a local backup directory on your computer.
-
-#### Example 2: Web Server Directory (Linux)
-```yaml
-resource-pack:
-  transfer-to-path: '/var/www/html/resourcepacks/'
-```
-Copy to your web server directory for hosting resource packs online.
-
-#### Example 3: Windows Local Directory
-```yaml
-resource-pack:
-  transfer-to-path: 'C:\MinecraftServer\ResourcePacks\'
-```
-Copy to a Windows directory (note the different path format).
-
-#### Example 4: Network Shared Folder
-```yaml
-resource-pack:
-  transfer-to-path: '/mnt/shared/minecraft/resourcepacks/'
-```
-Copy to a network shared folder accessible by multiple servers.
+**Examples:**
+- **Linux/Mac**: `/home/user/resourcepacks/`
+- **Windows**: `C:\MinecraftPacks\`
 
 ### Manual Transfer Commands
 If automatic transfer is disabled, or if you want more control over the process:
@@ -291,6 +263,10 @@ If you encounter issues:
 4. Check file permissions for transfer paths
 5. Ensure HMCCosmetics plugin is installed and updated
 
+**Need help?** Contact me on Discord:
+- **Discord**: `bckd00r`
+- **Or tag me in**: Hibiscus Studio → `#cosmetics-support` channel
+
 ## 🔗 Integration Notes
 
 ### HMCCosmetics Compatibility
@@ -303,6 +279,15 @@ If you encounter issues:
 - Generated packs are compatible with Minecraft 1.21+
 - Use `transfer-to-path` for automatic distribution
 - Compatible with web servers, CDNs, and file sharing
+
+---
+
+## 🧪 Tested Versions
+
+This plugin has been tested and confirmed working with:
+- **PaperMC**: 1.21.8
+- **HibiscusCommons**: 0.8.0-3c107b51
+- **HMCCosmeticsRemapped**: 2.8.2-e76aa078
 
 ---
 
