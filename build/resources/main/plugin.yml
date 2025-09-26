@@ -1,9 +1,11 @@
-name: HMCCosmeticsRP
+name: HMCCosmeticsPackGenerator
 version: '1.0'
 main: gg.bckd00r.community.plugin.HMCCosmeticsRP.HMCCosmeticsPackPlugin
 api-version: '1.21'
 authors: [ bckd00r ]
 description: HMCCosmetics resourcepack creator plugin.
+dependencies:
+  - HMCCosmetics
 
 commands:
   hmcpack:
