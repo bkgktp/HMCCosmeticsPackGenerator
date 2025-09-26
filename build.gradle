@@ -9,7 +9,6 @@ version = '1.0'
 
 //project.setLibsDirName('/Users/bkgktp/IdeaProjects/HMCCosmeticsRP/run/plugins');
 
-
 repositories {
     mavenCentral()
     maven {
@@ -26,10 +25,6 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     compileOnly("com.hibiscusmc:HMCCosmetics:2.8.2-fed13b8e")
 
-    //compileOnly 'org.projectlombok:lombok:1.18.32'
-    //annotationProcessor 'org.projectlombok:lombok:1.18.32'
-
-    //implementation 'com.github.MagmaGuy:MagmaCore:1.13-SNAPSHOT'
     implementation 'commons-io:commons-io:2.15.1'
     implementation("com.google.code.gson:gson:2.10.1")
 }
