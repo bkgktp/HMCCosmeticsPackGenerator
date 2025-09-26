@@ -134,7 +134,7 @@ settings:
 - **`true`**: Automatically copies YML files to `HMCCosmetics/cosmetics/` folder
 - **`false`**: Files stay in temp folder, use `/hmcpack senddata` to transfer manually
 
-⚠️ **Important Warning**: When set to `true`, this will **overwrite existing files** in `HMCCosmetics/cosmetics/` folder. Any manual changes you made to cosmetic YML files will be lost. Use `/hmcpack senddata` command for safer manual transfer if you have custom modifications.
+⚠️ **Important Warning**: When set to `true`, this will **overwrite existing files** in `HMCCosmetics/cosmetics/` folder. Manual changes you make to cosmetic YML files will be lost. If you have any custom changes, back them up or disable this setting after you're done, then use the `/hmcpack senddata` command for manual transfer.
 
 #### 2. **Local Directory Transfer**
 ```yaml
