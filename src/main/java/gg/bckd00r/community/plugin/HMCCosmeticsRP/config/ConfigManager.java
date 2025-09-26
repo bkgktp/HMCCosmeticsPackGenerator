@@ -13,10 +13,9 @@ public class ConfigManager {
     // Default values
     private String resourcePackId = "HMCCosmetics";
     private String namespace = "hmc";
-    private boolean useItemModelComponent = true;
     private final Map<String, String> defaultMaterials = new HashMap<>();
-    private int customModelDataStart = 1000;
-    private String customOutputPath = "";
+    private String copyToPath = "";
+    private boolean transferGeneratedCosmeticYmlFiles = true;
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -34,9 +33,8 @@ public class ConfigManager {
         // Add default values if they don't exist
         config.addDefault("resource-pack.id", resourcePackId);
         config.addDefault("resource-pack.namespace", namespace);
-        config.addDefault("settings.use-item-model-component", useItemModelComponent);
-        config.addDefault("settings.custom-model-data.start-value", customModelDataStart);
-        config.addDefault("output.custom-path", customOutputPath);
+        config.addDefault("resource-pack.transfer-to-path", copyToPath);
+        config.addDefault("settings.transfer-generated-cosmetic-yml-files", transferGeneratedCosmeticYmlFiles);
         
         // Add default materials configuration
         Map<String, String> defaultMaterialMap = new HashMap<>();
@@ -57,12 +55,6 @@ public class ConfigManager {
         
         // Load the values
         resourcePackId = config.getString("resource-pack.id", resourcePackId);
-        namespace = config.getString("resource-pack.namespace", namespace);
-        useItemModelComponent = config.getBoolean("settings.use-item-model-component", useItemModelComponent);
-        saveConfig();
-
-        // Load values
-        resourcePackId = config.getString("resource-pack.id", resourcePackId);
         namespace = config.getString("resource-pack.namespace", namespace).toLowerCase();
         
         // Load default materials
@@ -72,11 +64,9 @@ public class ConfigManager {
             }
         }
         
-        // Load custom model data start value
-        customModelDataStart = config.getInt("settings.custom-model-data.start-value", 21000);
-        
-        // Load custom output path
-        customOutputPath = config.getString("output.custom-path", "");
+        // Load transfer-to-path and transfer settings
+        copyToPath = config.getString("resource-pack.transfer-to-path", "");
+        transferGeneratedCosmeticYmlFiles = config.getBoolean("settings.transfer-generated-cosmetic-yml-files", true);
     }
 
     public void saveConfig() {
@@ -101,42 +91,29 @@ public class ConfigManager {
     }
     
     /**
-     * Gets the starting value for custom model data
-     * @return The starting value for custom model data
+     * Gets the transfer-to-path where the generated pack should be copied to
+     * @return The transfer-to-path, or null if not set
      */
-    public int getCustomModelDataStartValue() {
-        return customModelDataStart;
+    public String getCopyToPath() {
+        return copyToPath == null || copyToPath.isEmpty() ? null : copyToPath;
     }
     
     /**
-     * Gets the custom output path where the generated pack should be copied to
-     * @return The custom output path, or null if not set
+     * Gets whether to transfer generated cosmetic YML files to HMCCosmetics
+     * @return true to copy files to HMCCosmetics/cosmetics, false to use senddata command
      */
-    public String getCustomOutputPath() {
-        return customOutputPath == null || customOutputPath.isEmpty() ? null : customOutputPath;
+    public boolean shouldTransferGeneratedCosmeticYmlFiles() {
+        return transferGeneratedCosmeticYmlFiles;
     }
     
-    public boolean useItemModelComponent() {
-        return useItemModelComponent;
-    }
+    // REMOVED: useItemModelComponent() method
 
     /**
      * Gets the base output directory for models and textures
      * @return Path to the output directory
      */
     public String getOutputPath() {
-        // Check for custom output path in config
-        if (config.getConfigurationSection("output") != null &&
-                config.getConfigurationSection("output").contains("custom-path")) {
-            String customPath = config.getString("output.custom-path");
-            if (customPath != null && !customPath.trim().isEmpty()) {
-                return customPath.endsWith("/") ?
-                        customPath.substring(0, customPath.length() - 1) :
-                        customPath;
-            }
-        }
-
-        // Default to plugin's data directory
+        // Always use plugin's data directory for initial generation
         return plugin.getDataFolder().getAbsolutePath() + "/output";
     }
 

@@ -38,15 +38,11 @@ public class BBModelToJsonConvert {
                                String texturesRoot,
                                String namespace) throws IOException {
 
-        System.out.println("=== BBModel Conversion Debug ===");
-        System.out.println("Input BBModel: " + bbmodelPath);
-        System.out.println("Output JSON: " + mcjsonPath);
-        System.out.println("Textures Root: " + texturesRoot);
-        System.out.println("Namespace: " + namespace);
+        // BBModel conversion starting
         
         // Extract model name from JSON path for consistent texture naming
         String modelName = new File(mcjsonPath).getName().replace(".json", "");
-        System.out.println("Model name for texture consistency: " + modelName);
+        // Using model name for texture consistency
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         
@@ -56,18 +52,18 @@ public class BBModelToJsonConvert {
             throw new IOException("BBModel file is empty or null: " + bbmodelPath);
         }
         
-        System.out.println("BBModel file size: " + bbmodelContent.length() + " characters");
+        // BBModel file loaded
         
         JsonObject bb;
         try {
             bb = gson.fromJson(bbmodelContent, JsonObject.class);
             if (bb == null) {
-                System.err.println("ERROR: Failed to parse BBModel JSON - result is null");
+                // Failed to parse BBModel JSON
                 throw new IOException("Failed to parse BBModel JSON: " + bbmodelPath);
             }
-            System.out.println("✅ BBModel JSON parsed successfully");
+            // BBModel JSON parsed successfully
         } catch (JsonSyntaxException e) {
-            System.err.println("ERROR: Invalid JSON syntax: " + e.getMessage());
+            // Invalid JSON syntax in BBModel
             throw new IOException("Invalid JSON syntax in BBModel file: " + bbmodelPath, e);
         }
 
@@ -121,7 +117,7 @@ public class BBModelToJsonConvert {
                     pngName = modelName + "_" + i + ".png";
                 }
                 
-                System.out.println("Texture " + i + ": Using consistent name '" + pngName + "' instead of BBModel name");
+                // Using consistent texture name
                 
                 // Kaynak paket kuralları: küçük harf, boşluk yok (already handled by model name)
                 pngName = pngName.toLowerCase().replace(' ', '_');
@@ -136,7 +132,7 @@ public class BBModelToJsonConvert {
                             Files.write(texturesDir.resolve(pngName), image);
                         } catch (IllegalArgumentException e) {
                             // Skip invalid base64 data
-                            System.err.println("Warning: Invalid base64 texture data for " + pngName);
+                            // Invalid base64 texture data
                         }
                     }
                 }
@@ -224,6 +220,10 @@ public class BBModelToJsonConvert {
                                 ref = "#0"; // Default fallback
                             }
                             fOut.addProperty("texture", ref);
+                        } else {
+                            // ✅ CRITICAL FIX: Always add texture reference, never leave null
+                            // Minecraft JSON parser cannot handle null texture values
+                            fOut.addProperty("texture", "#0"); // Default texture for faces without explicit texture
                         }
 
                         // Blockbench bazen "tint" ya da "tintindex" kullanabiliyor
@@ -246,18 +246,19 @@ public class BBModelToJsonConvert {
         // ---- 3) Display aynen aktar ----
         if (bb.has("display") && !bb.get("display").isJsonNull()) mc.add("display", bb.get("display"));
 
-        System.out.println("✅ Minecraft JSON model created successfully");
-        System.out.println("Output JSON keys: " + mc.keySet().toString());
+
+
+        // Minecraft JSON model created successfully
 
         // Yaz
         try (FileWriter w = new FileWriter(mcjsonPath)) {
             gson.toJson(mc, w);
-            System.out.println("✅ JSON file written successfully to: " + mcjsonPath);
+            // JSON file written successfully
         } catch (IOException e) {
-            System.err.println("ERROR: Failed to write JSON file: " + e.getMessage());
+            // Failed to write JSON file
             throw e;
         }
         
-        System.out.println("=== BBModel Conversion Complete ===");
+        // BBModel conversion complete
     }
 }

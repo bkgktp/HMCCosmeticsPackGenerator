@@ -9,22 +9,15 @@ resource-pack:
   # The namespace to use for models and textures (e.g., 'hmc' will use 'hmc:item/...' paths)
   namespace: 'hmc'
 
-# Output settings
-# Uncomment and modify the 'custom-output-path' to specify a custom output directory
-# If left commented, the default will be 'plugins/HMCCosmeticsRP/output/'
-
-# Custom path to copy the generated pack to (leave empty to disable)
-output:
-  custom-path: ''
+  # Custom path to copy the generated resource pack to (leave empty to disable)
+  transfer-to-path: ''
 
 # Item model settings
 settings:
-  # Whether to use item model components for custom models
-  use-item-model-component: true
-  
-  # Custom model data settings
-  custom-model-data:
-    start-value: 1000  # Starting value for custom model data
+  # Whether to transfer generated cosmetic YML files to HMCCosmetics
+  # true: Copy files to HMCCosmetics/cosmetics directory
+  # false: Use senddata command to transfer
+  transfer-generated-cosmetic-yml-files: true
   
   # Default materials for each cosmetic type
   default-materials:

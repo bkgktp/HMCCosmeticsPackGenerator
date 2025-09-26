@@ -190,10 +190,12 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         // Create LOCAL output directories first
         String localModelsPath = localOutputDir.getAbsolutePath() + "/assets/" + configManager.getNamespace() + "/models/item/";
         String localTexturesPath = localOutputDir.getAbsolutePath() + "/assets/" + configManager.getNamespace() + "/textures/item/";
+        String localItemsPath = localOutputDir.getAbsolutePath() + "/assets/" + configManager.getNamespace() + "/items/";
         
         try {
             Files.createDirectories(Paths.get(localModelsPath));
             Files.createDirectories(Paths.get(localTexturesPath));
+            Files.createDirectories(Paths.get(localItemsPath));
             sender.sendMessage(ChatColor.GREEN + "✓ Created output directories");
         } catch (IOException e) {
             sender.sendMessage(ChatColor.RED + "Failed to create output directories: " + e.getMessage());
@@ -218,7 +220,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         
         int successCount = 0;
         
-        // Process main models first
+        // Process all models (main models will be processed with their firstperson variants)
         for (Map.Entry<String, File> entry : mainModels.entrySet()) {
             String modelName = entry.getKey();
             File bbmodelFile = entry.getValue();
@@ -260,6 +262,25 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                         continue;
                     }
                     
+                    // Process firstperson model separately if it exists
+                    if (firstpersonFile != null) {
+                        try {
+                            String firstpersonJsonPath = localModelsPath + modelName + "_firstperson.json";
+                            File firstpersonJsonFile = new File(firstpersonJsonPath);
+                            if (firstpersonJsonFile.exists()) {
+                                // Process firstperson model like any other model
+                                plugin.getLogger().info("Processing firstperson model: " + modelName + "_firstperson");
+                                ymlGenerator.loadAndProcessModel(firstpersonJsonFile, modelName + "_firstperson");
+                                plugin.getLogger().info("Successfully processed firstperson model: " + modelName + "_firstperson");
+                            } else {
+                                plugin.getLogger().warning("Firstperson JSON file not found: " + firstpersonJsonPath);
+                            }
+                        } catch (Exception e) {
+                            plugin.getLogger().warning("Failed to process firstperson model for " + modelName + ": " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    }
+                    
                     // Count the type
                     processedCounts.merge(type.toLowerCase(), 1, Integer::sum);
                     
@@ -292,7 +313,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                 } catch (Exception e) {
                     sender.sendMessage(ChatColor.RED + "Error processing " + bbmodelFile.getName() + ": " + e.getMessage());
                     plugin.getLogger().severe("Error processing " + bbmodelFile.getName() + ": " + e.getMessage());
-                    e.printStackTrace();
                     continue;
                 }
                 
@@ -306,17 +326,8 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         // Save all cosmetics to their respective type files
         ymlGenerator.saveAllCosmetics();
         
-        // Generate custom model data JSONs if not using item model components
-        if (!configManager.useItemModelComponent()) {
-            try {
-                plugin.getModelDataGenerator().generateModelJsons();
-                sender.sendMessage(ChatColor.GREEN + "✓ Generated custom model data JSON files locally");
-            } catch (Exception e) {
-                sender.sendMessage(ChatColor.RED + "Error generating custom model data: " + e.getMessage());
-                plugin.getLogger().severe("Error generating custom model data: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
+        // REMOVED: Custom model data generation - now using item model components only
+        // All models now use the modern item model component system
         
         sender.sendMessage(ChatColor.GREEN + "✓ Step 2 Complete: All files generated locally");
         sender.sendMessage(ChatColor.YELLOW + "Step 3: Copying changed files to target output...");
@@ -344,12 +355,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         if (offhandCount > 0) sender.sendMessage(ChatColor.YELLOW + "- Offhand Items: " + ChatColor.WHITE + offhandCount);
         if (otherCount > 0) sender.sendMessage(ChatColor.YELLOW + "- Other: " + ChatColor.WHITE + otherCount);
         
-        // Copy the generated pack to the custom output path if specified
-        boolean copied = FileUtils.copyPackToCustomPath(plugin, packId);
-        if (copied) {
-            sender.sendMessage(ChatColor.GREEN + "Successfully copied pack to custom output path.");
-        }
-        
         // Show saved files
         sender.sendMessage(ChatColor.GOLD + "Saved to files:");
         for (Map.Entry<String, Integer> entry : processedCounts.entrySet()) {
@@ -359,6 +364,12 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         
         // Copy files to hooks if needed
         // copyToHooks(sender);
+        
+        // Copy the generated pack to the transfer-to-path if specified
+        // MOVED TO END: This ensures all files including firstperson namespace items are copied
+        // Use the correct transfer method that uses 'resource-pack.transfer-to-path' config
+        ymlGenerator.copyResourcePackToExternalPath();
+        // Note: copyResourcePackToExternalPath() handles its own success/failure messaging
         
         sender.sendMessage(ChatColor.GREEN + "All cosmetics have been processed and saved successfully!");
     }
@@ -370,7 +381,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.GREEN + "Configuration and data.yml reloaded successfully!");
         } catch (Exception e) {
             sender.sendMessage(ChatColor.RED + "Failed to reload configuration: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -438,17 +448,46 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             }
             
             sender.sendMessage(ChatColor.GOLD + "=== Models in data.yml (" + models.size() + ") ===");
+            
+            // Separate main models and firstperson models
+            java.util.List<String> mainModels = new java.util.ArrayList<>();
+            java.util.List<String> firstpersonModels = new java.util.ArrayList<>();
+            
             for (String modelName : models.keySet()) {
-                gg.bckd00r.community.plugin.HMCCosmeticsRP.config.DataManager.ModelData modelData = models.get(modelName);
-                int displayCount = modelData.getDisplayData().size();
-                sender.sendMessage(ChatColor.YELLOW + "• " + ChatColor.WHITE + modelName + 
-                    ChatColor.GRAY + " (" + displayCount + " display settings)");
+                if (modelName.endsWith("_firstperson")) {
+                    firstpersonModels.add(modelName);
+                } else {
+                    mainModels.add(modelName);
+                }
             }
+            
+            // Show main models
+            if (!mainModels.isEmpty()) {
+                sender.sendMessage(ChatColor.AQUA + "Main Models:");
+                for (String modelName : mainModels) {
+                    gg.bckd00r.community.plugin.HMCCosmeticsRP.config.DataManager.ModelData modelData = models.get(modelName);
+                    int displayCount = modelData.getDisplayData().size();
+                    sender.sendMessage(ChatColor.YELLOW + "• " + ChatColor.WHITE + modelName + 
+                        ChatColor.GRAY + " (" + displayCount + " display settings)");
+                }
+            }
+            
+            // Show firstperson models
+            if (!firstpersonModels.isEmpty()) {
+                sender.sendMessage(ChatColor.LIGHT_PURPLE + "Firstperson Models:");
+                for (String modelName : firstpersonModels) {
+                    gg.bckd00r.community.plugin.HMCCosmeticsRP.config.DataManager.ModelData modelData = models.get(modelName);
+                    int displayCount = modelData.getDisplayData().size();
+                    String baseName = modelName.replace("_firstperson", "");
+                    sender.sendMessage(ChatColor.YELLOW + "• " + ChatColor.WHITE + modelName + 
+                        ChatColor.GRAY + " (" + displayCount + " display settings) [FP: " + baseName + "]");
+                }
+            }
+            
             sender.sendMessage(ChatColor.GRAY + "Use '/hmcpack data show <model>' for details");
             
         } catch (Exception e) {
             sender.sendMessage(ChatColor.RED + "Error listing models: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -461,7 +500,19 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                 return;
             }
             
-            sender.sendMessage(ChatColor.GOLD + "=== Model: " + modelName + " ===");
+            // Check if this is a firstperson model
+            boolean isFirstperson = modelName.endsWith("_firstperson");
+            String displayTitle = isFirstperson ? 
+                "=== Firstperson Model: " + modelName + " ===" : 
+                "=== Model: " + modelName + " ===";
+            
+            sender.sendMessage(ChatColor.GOLD + displayTitle);
+            
+            if (isFirstperson) {
+                String baseName = modelName.replace("_firstperson", "");
+                sender.sendMessage(ChatColor.GRAY + "Base model: " + ChatColor.WHITE + baseName);
+                sender.sendMessage(ChatColor.GRAY + "Type: " + ChatColor.LIGHT_PURPLE + "Firstperson View Model");
+            }
             
             for (Map.Entry<String, Map<String, Object>> displayEntry : modelData.getDisplayData().entrySet()) {
                 String displayType = displayEntry.getKey();
@@ -490,7 +541,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             
         } catch (Exception e) {
             sender.sendMessage(ChatColor.RED + "Error showing model: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -543,13 +593,22 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             // Save to data.yml
             plugin.getDataManager().updateModelData(modelName, modelData);
             
-            sender.sendMessage(ChatColor.GREEN + "✓ Updated " + modelName + "." + displayType + "." + property + 
+            // Check if this is a firstperson model for special messaging
+            boolean isFirstperson = modelName.endsWith("_firstperson");
+            String modelType = isFirstperson ? "firstperson model" : "model";
+            
+            sender.sendMessage(ChatColor.GREEN + "✓ Updated " + modelType + " " + modelName + "." + displayType + "." + property + 
                 " to [" + x + ", " + y + ", " + z + "]");
+            
+            if (isFirstperson) {
+                String baseName = modelName.replace("_firstperson", "");
+                sender.sendMessage(ChatColor.LIGHT_PURPLE + "Note: This is a firstperson view model for " + baseName);
+            }
+            
             sender.sendMessage(ChatColor.YELLOW + "Use '/hmcpack generate' to apply changes to JSON files");
             
         } catch (Exception e) {
             sender.sendMessage(ChatColor.RED + "Error setting value: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -591,7 +650,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             
         } catch (Exception e) {
             sender.sendMessage(ChatColor.RED + "Error resetting model: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -647,7 +705,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             
         } catch (Exception e) {
             plugin.getLogger().severe("Error reading original model data for " + modelName + ": " + e.getMessage());
-            e.printStackTrace();
             return null;
         }
     }
@@ -813,7 +870,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         } catch (Exception e) {
             sender.sendMessage(ChatColor.RED + "Error copying files to target output: " + e.getMessage());
             plugin.getLogger().severe("Error copying files to target output: " + e.getMessage());
-            e.printStackTrace();
         }
         
         return copiedFiles;
@@ -890,48 +946,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             return true;
         }
     }
-    
-    private void copyToHooks(CommandSender sender) {
-        // Get the HMCCosmetics plugin
-        Plugin hmcPlugin = plugin.getServer().getPluginManager().getPlugin("HMCCosmetics");
-        if (hmcPlugin == null) {
-            sender.sendMessage(ChatColor.RED + "HMCCosmetics plugin not found! Could not copy files.");
-            return;
-        }
-        
-        // Get the output directory
-        File outputDir = new File(plugin.getDataFolder(), "output/" + configManager.getResourcePackId());
-        if (!outputDir.exists()) {
-            outputDir.mkdirs();
-        }
-        
-        // Get the Nexoya directory (assuming it's in the server root)
-        File nexoyaDir = new File("Nexoya");
-        if (!nexoyaDir.exists()) {
-            nexoyaDir.mkdirs();
-        }
-        
-        try {
-            // Copy all files from output to Nexoya
-            Files.walk(outputDir.toPath())
-                .filter(Files::isRegularFile)
-                .forEach(source -> {
-                    try {
-                        Path relativePath = outputDir.toPath().relativize(source);
-                        Path target = nexoyaDir.toPath().resolve(relativePath);
-                        Files.createDirectories(target.getParent());
-                        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-                    } catch (IOException e) {
-                        sender.sendMessage(ChatColor.RED + "Error copying file to Nexoya: " + e.getMessage());
-                    }
-                });
-            
-            sender.sendMessage(ChatColor.GREEN + "Files copied to Nexoya directory successfully!");
-            
-        } catch (IOException e) {
-            sender.sendMessage(ChatColor.RED + "Error copying files to Nexoya: " + e.getMessage());
-        }
-    }
+
     
     private void handleSendData(CommandSender sender) {
         File tempDir = new File(plugin.getDataFolder(), "temp/" + configManager.getNamespace());
@@ -982,7 +997,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             
         } catch (IOException e) {
             sender.sendMessage(ChatColor.RED + "Error sending files: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -1014,7 +1028,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         } catch (Exception e) {
             sender.sendMessage(ChatColor.RED + "Error cleaning up old files: " + e.getMessage());
             plugin.getLogger().severe("Error cleaning up old files: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     

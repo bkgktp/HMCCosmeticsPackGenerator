@@ -79,7 +79,7 @@ public class DataManager {
                             }
                             if (!displayData.isEmpty()) {
                                 modelData.addDisplayData(displayType, displayData);
-                                plugin.getLogger().fine("Loaded display settings for " + modelName + "." + displayType);
+                                // Display settings loaded successfully
                             }
                         }
                     }
@@ -103,7 +103,6 @@ public class DataManager {
             plugin.getLogger().info("Successfully saved data.yml");
         } catch (IOException e) {
             plugin.getLogger().severe("Could not save data.yml: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 

@@ -66,7 +66,6 @@ public class FileUtils {
             
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to copy pack to custom path: " + e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }

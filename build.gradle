@@ -7,6 +7,9 @@ plugins {
 group = 'gg.bckd00r.community.plugin'
 version = '1.0'
 
+//project.setLibsDirName('/Users/bkgktp/IdeaProjects/HMCCosmeticsRP/run/plugins');
+
+
 repositories {
     mavenCentral()
     maven {

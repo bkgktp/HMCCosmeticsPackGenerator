@@ -20,7 +20,8 @@ public class CustomModelDataGenerator {
     
     public CustomModelDataGenerator(HMCCosmeticsPackPlugin plugin) {
         this.plugin = plugin;
-        this.currentModelData = new AtomicInteger(plugin.getConfigManager().getCustomModelDataStartValue());
+        // REMOVED: Custom model data system - using fixed start value
+        this.currentModelData = new AtomicInteger(1000);
     }
     
     /**
@@ -50,21 +51,27 @@ public class CustomModelDataGenerator {
     
     /**
      * Generates all the necessary JSON files for custom model data
+     * Creates both legacy (models/item/) and modern (items/) formats for maximum compatibility
      */
     public void generateModelJsons() {
-        if (plugin.getConfigManager().useItemModelComponent()) {
-            return; // Skip if using item model components
-        }
-        
-        // Create the directory structure: output/{packId}/assets/minecraft/items/
+        // Create the directory structure for both formats
         String packId = plugin.getConfigManager().getResourcePackId();
         File outputDir = new File(plugin.getDataFolder(), "output/" + packId);
         File assetsDir = new File(outputDir, "assets");
         File minecraftDir = new File(assetsDir, "minecraft");
-        File itemsDir = new File(minecraftDir, "items");
         
+        // Modern format: assets/minecraft/items/
+        File itemsDir = new File(minecraftDir, "items");
         if (!itemsDir.exists() && !itemsDir.mkdirs()) {
             plugin.getLogger().warning("Failed to create directory: " + itemsDir.getAbsolutePath());
+            return;
+        }
+        
+        // Legacy format: assets/minecraft/models/item/
+        File modelsDir = new File(minecraftDir, "models");
+        File modelsItemDir = new File(modelsDir, "item");
+        if (!modelsItemDir.exists() && !modelsItemDir.mkdirs()) {
+            plugin.getLogger().warning("Failed to create directory: " + modelsItemDir.getAbsolutePath());
             return;
         }
         
@@ -73,30 +80,63 @@ public class CustomModelDataGenerator {
             String material = entry.getKey();
             List<ModelEntry> entries = entry.getValue();
             
-            JsonObject root = new JsonObject();
-            JsonObject modelObj = new JsonObject();
-            root.add("model", modelObj);
+            // === MODERN FORMAT (items/) ===
+            JsonObject modernRoot = new JsonObject();
+            JsonObject modernModelObj = new JsonObject();
+            modernRoot.add("model", modernModelObj);
             
-            modelObj.addProperty("type", "range_dispatch");
-            modelObj.addProperty("property", "custom_model_data");
+            modernModelObj.addProperty("type", "range_dispatch");
+            modernModelObj.addProperty("property", "custom_model_data");
 
-            JsonArray entriesArray = getJsonElements(entries);
-
-            modelObj.add("entries", entriesArray);
+            JsonArray modernEntriesArray = getJsonElements(entries);
+            modernModelObj.add("entries", modernEntriesArray);
             
-            // Add fallback model
-            JsonObject fallback = new JsonObject();
-            fallback.addProperty("type", "model");
-            fallback.addProperty("model", "item/" + material.toLowerCase());
-            modelObj.add("fallback", fallback);
+            // Add fallback model for modern format
+            JsonObject modernFallback = new JsonObject();
+            modernFallback.addProperty("type", "model");
+            modernFallback.addProperty("model", "item/" + material.toLowerCase());
+            modernModelObj.add("fallback", modernFallback);
             
-            // Write to file in the items directory
-            File outputFile = new File(itemsDir, material.toLowerCase() + ".json");
-            try (FileWriter writer = new FileWriter(outputFile)) {
+            // Write modern format to items directory
+            File modernOutputFile = new File(itemsDir, material.toLowerCase() + ".json");
+            try (FileWriter writer = new FileWriter(modernOutputFile)) {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                gson.toJson(root, writer);
+                gson.toJson(modernRoot, writer);
+                plugin.getLogger().info("Generated modern format: " + modernOutputFile.getAbsolutePath());
             } catch (IOException e) {
-                plugin.getLogger().warning("Failed to write custom model data for " + material + ": " + e.getMessage());
+                plugin.getLogger().warning("Failed to write modern format for " + material + ": " + e.getMessage());
+            }
+            
+            // === LEGACY FORMAT (models/item/) ===
+            JsonObject legacyRoot = new JsonObject();
+            JsonArray overrides = new JsonArray();
+            
+            // Add overrides for each model
+            for (ModelEntry modelEntry : entries) {
+                JsonObject override = new JsonObject();
+                JsonObject predicate = new JsonObject();
+                predicate.addProperty("custom_model_data", modelEntry.getModelData());
+                override.add("predicate", predicate);
+                override.addProperty("model", modelEntry.getModelPath());
+                overrides.add(override);
+            }
+            
+            legacyRoot.add("overrides", overrides);
+            legacyRoot.addProperty("parent", "minecraft:item/generated");
+            
+            // Add textures
+            JsonObject textures = new JsonObject();
+            textures.addProperty("layer0", "minecraft:item/" + material.toLowerCase());
+            legacyRoot.add("textures", textures);
+            
+            // Write legacy format to models/item directory
+            File legacyOutputFile = new File(modelsItemDir, material.toLowerCase() + ".json");
+            try (FileWriter writer = new FileWriter(legacyOutputFile)) {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                gson.toJson(legacyRoot, writer);
+                plugin.getLogger().info("Generated legacy format: " + legacyOutputFile.getAbsolutePath());
+            } catch (IOException e) {
+                plugin.getLogger().warning("Failed to write legacy format for " + material + ": " + e.getMessage());
             }
         }
     }
