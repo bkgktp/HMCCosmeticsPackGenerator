@@ -1,4 +1,4 @@
-package gg.bckd00r.community.plugin.HMCCosmeticsRP.converter;
+package gg.bckd00r.community.plugin.HMCCosmeticsRP.converter.java;
 
 import com.google.gson.*;
 
@@ -17,12 +17,12 @@ public class BBModelToJsonConvert {
     // BBModel uses pixel coordinates, Minecraft uses normalized coordinates (0-16)
     private static JsonArray normalizeUV(JsonArray uv, int textureWidth, int textureHeight) {
         JsonArray out = new JsonArray();
-        
+
         // Calculate scale factors based on texture dimensions
         // Minecraft expects coordinates in 0-16 range for standard 16x16 textures
         double scaleX = 16.0 / textureWidth;
         double scaleY = 16.0 / textureHeight;
-        
+
         for (int i = 0; i < uv.size(); i++) {
             double val = uv.get(i).getAsDouble();
             // Apply appropriate scale based on coordinate index (x or y)
@@ -45,21 +45,21 @@ public class BBModelToJsonConvert {
                                String namespace) throws IOException {
 
         // BBModel conversion starting
-        
+
         // Extract model name from JSON path for consistent texture naming
         String modelName = new File(mcjsonPath).getName().replace(".json", "");
         // Using model name for texture consistency
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        
+
         // Add null check for file reading
         String bbmodelContent = Files.readString(Path.of(bbmodelPath));
         if (bbmodelContent == null || bbmodelContent.trim().isEmpty()) {
             throw new IOException("BBModel file is empty or null: " + bbmodelPath);
         }
-        
+
         // BBModel file loaded
-        
+
         JsonObject bb;
         try {
             bb = gson.fromJson(bbmodelContent, JsonObject.class);
@@ -78,7 +78,7 @@ public class BBModelToJsonConvert {
         // Get texture dimensions for UV scaling
         int textureWidth = 16;  // Default Minecraft texture size
         int textureHeight = 16;
-        
+
         // Bilgi alanları - null safe
         if (bb.has("credit") && !bb.get("credit").isJsonNull()) {
             mc.add("credit", bb.get("credit"));
@@ -94,8 +94,8 @@ public class BBModelToJsonConvert {
             mc.add("texture_size", bb.get("texture_size"));
         } else if (bb.has("resolution") && bb.get("resolution").isJsonObject()) {
             JsonObject res = bb.getAsJsonObject("resolution");
-            if (res != null && res.has("width") && res.has("height") && 
-                !res.get("width").isJsonNull() && !res.get("height").isJsonNull()) {
+            if (res != null && res.has("width") && res.has("height") &&
+                    !res.get("width").isJsonNull() && !res.get("height").isJsonNull()) {
                 textureWidth = res.get("width").getAsInt();
                 textureHeight = res.get("height").getAsInt();
                 JsonArray ts = new JsonArray();
@@ -121,16 +121,20 @@ public class BBModelToJsonConvert {
                 if (textureElement == null || textureElement.isJsonNull() || !textureElement.isJsonObject()) {
                     continue; // Skip null or invalid texture entries
                 }
-                
+
                 JsonObject t = textureElement.getAsJsonObject();
 
                 // Try to use original BBModel texture name if available, otherwise fall back to model name
                 String pngName;
                 String baseName;
-                
+
                 if (t.has("name") && !t.get("name").isJsonNull()) {
                     // Use original BBModel texture name
                     String originalName = t.get("name").getAsString();
+                    // DÜZELTME: _png suffix'ini kaldır (gereksiz suffix)
+                    if (originalName.endsWith("_png")) {
+                        originalName = originalName.substring(0, originalName.length() - 4);
+                    }
                     // Clean the name for file system compatibility
                     originalName = originalName.replaceAll("[^a-zA-Z0-9_-]", "_");
                     pngName = originalName + ".png";
@@ -145,7 +149,7 @@ public class BBModelToJsonConvert {
                         baseName = modelName + "_" + i;
                     }
                 }
-                
+
                 // Kaynak paket kuralları: küçük harf, boşluk yok
                 pngName = pngName.toLowerCase().replace(' ', '_');
                 baseName = baseName.toLowerCase().replace(' ', '_');
@@ -157,7 +161,7 @@ public class BBModelToJsonConvert {
                         try {
                             byte[] image = Base64.getDecoder().decode(src.substring("data:image/png;base64,".length()));
                             Files.write(texturesDir.resolve(pngName), image);
-                            
+
                             // Check if this texture should be animated and create .mcmeta file
                             createAnimationMcmeta(t, texturesDir, pngName);
                         } catch (IllegalArgumentException e) {
@@ -186,7 +190,7 @@ public class BBModelToJsonConvert {
                 if (e == null || e.isJsonNull() || !e.isJsonObject()) {
                     continue; // Skip null or invalid elements
                 }
-                
+
                 JsonObject bbElem = e.getAsJsonObject();
                 JsonObject mcElem = new JsonObject();
 
@@ -195,9 +199,9 @@ public class BBModelToJsonConvert {
                 if (bbElem.has("to") && !bbElem.get("to").isJsonNull())   mcElem.add("to", bbElem.get("to"));
 
                 // Rotation: [x,y,z] + origin -> MC {angle, axis, origin}
-                if (bbElem.has("rotation") && !bbElem.get("rotation").isJsonNull() && 
-                    bbElem.get("rotation").isJsonArray() && bbElem.has("origin") && 
-                    !bbElem.get("origin").isJsonNull()) {
+                if (bbElem.has("rotation") && !bbElem.get("rotation").isJsonNull() &&
+                        bbElem.get("rotation").isJsonArray() && bbElem.has("origin") &&
+                        !bbElem.get("origin").isJsonNull()) {
                     JsonArray r = bbElem.getAsJsonArray("rotation");
                     int axisIdx = -1;
                     double angle = 0;
@@ -228,7 +232,7 @@ public class BBModelToJsonConvert {
                         if (faceElement == null || faceElement.isJsonNull() || !faceElement.isJsonObject()) {
                             continue; // Skip null or invalid face entries
                         }
-                        
+
                         JsonObject fIn = faceElement.getAsJsonObject();
                         JsonObject fOut = new JsonObject();
 
@@ -281,7 +285,7 @@ public class BBModelToJsonConvert {
         } catch (IOException e) {
             throw e;
         }
-        
+
         // BBModel conversion complete
     }
 
@@ -293,23 +297,23 @@ public class BBModelToJsonConvert {
             // Check if texture has animation properties
             boolean shouldAnimate = false;
             JsonObject animationConfig = new JsonObject();
-            
+
             // Check for common animation indicators in texture name or properties
             String textureName = pngName.toLowerCase();
-            if (textureName.contains("animated") || textureName.contains("anim") || 
-                textureName.contains("_1") || textureName.contains("_2")) {
+            if (textureName.contains("animated") || textureName.contains("anim") ||
+                    textureName.contains("_1") || textureName.contains("_2")) {
                 shouldAnimate = true;
             }
-            
+
             // Check BBModel texture properties for animation data
             if (textureObj.has("animated") && textureObj.get("animated").getAsBoolean()) {
                 shouldAnimate = true;
             }
-            
+
             if (textureObj.has("animation") && textureObj.get("animation").isJsonObject()) {
                 shouldAnimate = true;
                 JsonObject bbAnimation = textureObj.getAsJsonObject("animation");
-                
+
                 // Copy animation properties from BBModel to Minecraft format
                 if (bbAnimation.has("frametime")) {
                     animationConfig.addProperty("frametime", bbAnimation.get("frametime").getAsInt());
@@ -321,22 +325,22 @@ public class BBModelToJsonConvert {
                     animationConfig.add("frames", bbAnimation.get("frames"));
                 }
             }
-            
+
             // If no specific animation config found, use default settings for animated textures
             if (shouldAnimate && animationConfig.size() == 0) {
                 // Default animation settings for textures that appear to be animated
                 animationConfig.addProperty("frametime", 2); // 2 ticks per frame (0.1 seconds)
                 animationConfig.addProperty("interpolate", false);
             }
-            
+
             // Create .mcmeta file if animation is needed
             if (shouldAnimate) {
                 JsonObject mcmeta = new JsonObject();
                 mcmeta.add("animation", animationConfig);
-                
+
                 String mcmetaName = pngName.replace(".png", ".png.mcmeta");
                 Path mcmetaPath = texturesDir.resolve(mcmetaName);
-                
+
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 try (FileWriter writer = new FileWriter(mcmetaPath.toFile())) {
                     gson.toJson(mcmeta, writer);

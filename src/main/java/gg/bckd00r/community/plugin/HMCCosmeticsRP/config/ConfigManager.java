@@ -16,6 +16,10 @@ public class ConfigManager {
     private final Map<String, String> defaultMaterials = new HashMap<>();
     private String copyToPath = "";
     private boolean transferGeneratedCosmeticYmlFiles = true;
+    
+    // Bedrock Edition support
+    private boolean bedrockEnabled  = false;
+    private boolean bedrockSeparateDirectory = true;
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -48,6 +52,10 @@ public class ConfigManager {
         
         config.addDefault("settings.default-materials", defaultMaterialMap);
         
+        // Add Bedrock Edition defaults
+        config.addDefault("bedrock.enabled", bedrockEnabled);
+        config.addDefault("bedrock.separate-directory", bedrockSeparateDirectory);
+        
         config.options().copyDefaults(true);
         
         // Save the config to ensure new defaults are written
@@ -67,6 +75,10 @@ public class ConfigManager {
         // Load transfer-to-path and transfer settings
         copyToPath = config.getString("resource-pack.transfer-to-path", "");
         transferGeneratedCosmeticYmlFiles = config.getBoolean("settings.transfer-generated-cosmetic-yml-files", true);
+        
+        // Load Bedrock settings
+        bedrockEnabled = config.getBoolean("bedrock.enabled", false);
+        bedrockSeparateDirectory = config.getBoolean("bedrock.separate-directory", true);
     }
 
     public void saveConfig() {
@@ -127,5 +139,21 @@ public class ConfigManager {
 
     public String getFullTexturesPath() {
         return getTexturesPath();
+    }
+    
+    /**
+     * Gets whether Bedrock Edition pack generation is enabled
+     * @return true if Bedrock pack generation is enabled
+     */
+    public boolean isBedrockEnabled() {
+        return bedrockEnabled;
+    }
+    
+    /**
+     * Gets whether Bedrock packs should be generated in a separate directory
+     * @return true if Bedrock packs should be in separate directory
+     */
+    public boolean isBedrockSeparateDirectory() {
+        return bedrockSeparateDirectory;
     }
 }

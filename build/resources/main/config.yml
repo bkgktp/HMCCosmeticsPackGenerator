@@ -12,6 +12,14 @@ resource-pack:
   # Custom path to copy the generated resource pack to (leave empty to disable)
   transfer-to-path: ''
 
+  # Bedrock Edition support
+  bedrock:
+    # Enable Bedrock resource pack generation alongside Java pack
+    enabled: true
+    
+    # Generate Bedrock pack in separate directory (adds "_bedrock" suffix)
+    separate-directory: true
+
 # Item model settings
 settings:
   # Whether to transfer generated cosmetic YML files to HMCCosmetics
