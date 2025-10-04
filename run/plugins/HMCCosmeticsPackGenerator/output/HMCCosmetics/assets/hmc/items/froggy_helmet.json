@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "model",
+    "model": "hmc:item/froggy_helmet",
+    "tints": [
+      {
+        "type": "dye",
+        "default": 16777215
+      }
+    ]
+  }
+}

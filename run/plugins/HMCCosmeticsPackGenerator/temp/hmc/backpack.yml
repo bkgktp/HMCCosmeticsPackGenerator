@@ -1,0 +1,44 @@
+halfmoon_wing_backpack:
+  height: 1
+  slot: BACKPACK
+  permission: hmccosmetics.cosmetic.halfmoon_wing_backpack
+  show-in-menu: true
+  item:
+    material: LEATHER_HORSE_ARMOR
+    name: Halfmoon Wing
+    lore:
+    - '&7A custom backpack cosmetic.'
+    flags:
+    - HIDE_ATTRIBUTES
+    custom-model-data: 13001
+    amount: 1
+  firstperson-item:
+    material: LEATHER_HORSE_ARMOR
+    name: Halfmoon Wing
+    lore:
+    - '&7A custom backpack cosmetic.'
+    custom-model-data: 13001
+    flags:
+    - HIDE_ATTRIBUTES
+halfmoon_bag_backpack:
+  height: 1
+  slot: BACKPACK
+  permission: hmccosmetics.cosmetic.halfmoon_bag_backpack
+  show-in-menu: true
+  item:
+    material: LEATHER_HORSE_ARMOR
+    name: Halfmoon Bag
+    lore:
+    - '&7A custom backpack cosmetic.'
+    flags:
+    - HIDE_ATTRIBUTES
+    custom-model-data: 13002
+    amount: 1
+  firstperson-item:
+    material: LEATHER_HORSE_ARMOR
+    name: Halfmoon Bag
+    lore:
+    - '&7A custom backpack cosmetic.'
+    custom-model-data: 13002
+    flags:
+    - HIDE_ATTRIBUTES

@@ -1,0 +1,33 @@
+{
+  "model": {
+    "type": "range_dispatch",
+    "property": "custom_model_data",
+    "entries": [
+      {
+        "threshold": 13000,
+        "model": {
+          "type": "model",
+          "model": "hmc:item/froggy_helmet"
+        }
+      },
+      {
+        "threshold": 13001,
+        "model": {
+          "type": "model",
+          "model": "hmc:item/halfmoon_wing_backpack"
+        }
+      },
+      {
+        "threshold": 13002,
+        "model": {
+          "type": "model",
+          "model": "hmc:item/halfmoon_bag_backpack"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "model",
+      "model": "item/leather_horse_armor"
+    }
+  }
+}

@@ -1,0 +1,290 @@
+# This file stores model overrides and custom display settings
+# Format:
+# models:
+#   model_name:
+#     display:
+#       head:
+#         rotation: [0, 0, 0]
+#         translation: [0, 0, 0]
+#         scale: [1, 1, 1]
+#       firstperson_righthand:
+#         rotation: [0, 0, 0]
+#         translation: [0, 0, 0]
+#         scale: [1, 1, 1]
+# Example:
+# models:
+#   samurai_backpack:
+#     display:
+#       head:
+#         rotation: [0, 0, 0]
+#         translation: [0, -10, 0]
+#         scale: [1, 1, 1]
+
+models:
+  froggy_helmet:
+    display:
+      head:
+        rotation:
+        - 7.5
+        - 0.0
+        - 0.0
+        translation:
+        - 0.0
+        - 15.75
+        - 1.75
+        scale:
+        - 1.8
+        - 1.8
+        - 1.8
+      firstperson_righthand:
+        rotation:
+        - 0.0
+        - 120.0
+        - 0.0
+        translation:
+        - 0.0
+        - 3.75
+        - 0.0
+        scale:
+        - 0.4
+        - 0.4
+        - 0.4
+      thirdperson_lefthand:
+        rotation:
+        - 75.0
+        - 45.0
+        - 0.0
+        translation:
+        - 0.0
+        - 2.5
+        - 0.0
+        scale:
+        - 0.375
+        - 0.375
+        - 0.375
+      firstperson_lefthand:
+        rotation:
+        - 0.0
+        - 120.0
+        - 0.0
+        translation:
+        - 0.0
+        - 3.75
+        - 0.0
+        scale:
+        - 0.4
+        - 0.4
+        - 0.4
+      thirdperson_righthand:
+        rotation:
+        - 75.0
+        - 45.0
+        - 0.0
+        translation:
+        - 0.0
+        - 2.5
+        - 0.0
+        scale:
+        - 0.375
+        - 0.375
+        - 0.375
+      ground:
+        translation:
+        - 0.0
+        - 6.0
+        - 0.0
+        scale:
+        - 0.5
+        - 0.5
+        - 0.5
+      gui:
+        rotation:
+        - 30.0
+        - 135.0
+        - 0.0
+        translation:
+        - 0.0
+        - 3.75
+        - 0.0
+        scale:
+        - 0.85
+        - 0.85
+        - 0.85
+  halfmoon_wing_backpack:
+    display:
+      head:
+        rotation:
+        - 1.0
+        - -180.0
+        - 0.0
+        translation:
+        - 0.0
+        - -55.25
+        - 6.5
+        scale:
+        - 1.6
+        - 1.6
+        - 1.6
+      firstperson_righthand:
+        rotation:
+        - 0.0
+        - 134.0
+        - 0.0
+        translation:
+        - 10.0
+        - -4.0
+        - -17.5
+      thirdperson_lefthand:
+        rotation:
+        - 68.0
+        - -180.0
+        - 0.0
+        translation:
+        - -5.75
+        - -8.5
+        - 4.75
+      firstperson_lefthand:
+        scale:
+        - 0.0
+        - 0.0
+        - 0.0
+      thirdperson_righthand:
+        rotation:
+        - 55.0
+        - 0.0
+        - 0.0
+        translation:
+        - 0.0
+        - -0.25
+        - 0.25
+        scale:
+        - 0.4
+        - 0.4
+        - 0.4
+      ground:
+        rotation:
+        - 80.0
+        - 0.0
+        - 0.0
+        translation:
+        - 0.0
+        - 0.5
+        - -1.25
+        scale:
+        - 0.6
+        - 0.6
+        - 0.6
+      gui:
+        rotation:
+        - 0.0
+        - -180.0
+        - 0.0
+        translation:
+        - 0.0
+        - -4.5
+        - 0.0
+        scale:
+        - 0.6
+        - 0.6
+        - 0.6
+      fixed:
+        translation:
+        - 0.0
+        - -5.25
+        - -2.0
+        scale:
+        - 1.4
+        - 1.4
+        - 1.4
+  halfmoon_bag_backpack:
+    display:
+      head:
+        rotation:
+        - 6.0
+        - -180.0
+        - 0.0
+        translation:
+        - 0.0
+        - -51.0
+        - 7.0
+        scale:
+        - 1.6
+        - 1.6
+        - 1.6
+      firstperson_righthand:
+        rotation:
+        - 0.0
+        - 134.0
+        - 0.0
+        translation:
+        - 10.0
+        - -4.0
+        - -11.5
+      thirdperson_lefthand:
+        rotation:
+        - 67.0
+        - -180.0
+        - 0.0
+        translation:
+        - -5.75
+        - -7.5
+        - 7.75
+      firstperson_lefthand:
+        scale:
+        - 0.0
+        - 0.0
+        - 0.0
+      thirdperson_righthand:
+        rotation:
+        - 55.0
+        - 0.0
+        - 0.0
+        translation:
+        - 0.0
+        - 2.0
+        - 1.75
+        scale:
+        - 0.4
+        - 0.4
+        - 0.4
+      ground:
+        rotation:
+        - 80.0
+        - 0.0
+        - 0.0
+        translation:
+        - 0.0
+        - 0.5
+        - -1.25
+        scale:
+        - 0.6
+        - 0.6
+        - 0.6
+      gui:
+        rotation:
+        - 7.0
+        - 169.0
+        - 0.0
+        translation:
+        - 0.0
+        - -0.75
+        - 0.0
+        scale:
+        - 0.7
+        - 0.7
+        - 0.7
+      fixed:
+        translation:
+        - 0.0
+        - 1.5
+        - -2.0
+        scale:
+        - 1.4
+        - 1.4
+        - 1.4
+
+# This file is automatically generated and managed by the plugin.
+# When you generate models for the first time, display settings from JSON files
+# will be extracted and saved here. On subsequent generations, the settings
+# from this file will be used instead of the JSON data.
+# Make changes carefully as they will affect how models are displayed in-game.

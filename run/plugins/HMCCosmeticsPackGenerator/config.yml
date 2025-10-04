@@ -1,0 +1,41 @@
+bedrock:
+  enabled: false
+  separate-directory: true
+debug: false
+# BBModel to Minecraft JSON Converter Configuration
+
+# Resource pack settings
+resource-pack:
+  # The ID of your resource pack (used in the output directory structure)
+  id: HMCCosmetics
+  
+  # The namespace to use for models and textures (e.g., 'hmc' will use 'hmc:item/...' paths)
+  namespace: hmc
+  
+  # Custom path to copy the generated resource pack to (leave empty to disable)
+  transfer-to-path: ''
+
+# Item model settings
+settings:
+  # Whether to transfer generated cosmetic YML files to HMCCosmetics
+  # true: Copy files to HMCCosmetics/cosmetics directory
+  # false: Use senddata command to transfer
+  transfer-generated-cosmetic-yml-files: true
+  
+  # Model format settings
+  # use-item-model-component: true = Use modern item model component system (1.21+)
+  # use-item-model-component: false = Use legacy custom model data system (pre-1.21)
+  use-item-model-component: false
+  
+  # Custom model data starting value (only used if use-item-model-component is false)
+  custom-model-data-start: 13000
+  
+  # Default materials for each cosmetic type
+  default-materials:
+    HELMET: LEATHER_HORSE_ARMOR
+    CHESTPLATE: LEATHER_HORSE_ARMOR
+    LEGGINGS: LEATHER_HORSE_ARMOR
+    BOOTS: LEATHER_HORSE_ARMOR
+    BACKPACK: LEATHER_HORSE_ARMOR
+    BALLOON: LEATHER_HORSE_ARMOR
+    OFFHAND: LEATHER_HORSE_ARMOR

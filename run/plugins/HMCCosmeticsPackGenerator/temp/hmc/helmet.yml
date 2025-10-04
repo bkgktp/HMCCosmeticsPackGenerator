@@ -1,0 +1,16 @@
+froggy_helmet:
+  height: 1
+  slot: HELMET
+  permission: hmccosmetics.cosmetic.froggy_helmet
+  show-in-menu: true
+  item:
+    material: LEATHER_HORSE_ARMOR
+    name: Froggy
+    lore:
+    - '&7A custom helmet cosmetic.'
+    flags:
+    - HIDE_ATTRIBUTES
+    custom-model-data: 13000
+    amount: 1
+    color: '#FFFFFF'
+  dyeable: true

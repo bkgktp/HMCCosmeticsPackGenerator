@@ -1,0 +1,26 @@
+{
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 13000
+      },
+      "model": "hmc:item/froggy_helmet"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 13001
+      },
+      "model": "hmc:item/halfmoon_wing_backpack"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 13002
+      },
+      "model": "hmc:item/halfmoon_bag_backpack"
+    }
+  ],
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/leather_horse_armor"
+  }
+}
