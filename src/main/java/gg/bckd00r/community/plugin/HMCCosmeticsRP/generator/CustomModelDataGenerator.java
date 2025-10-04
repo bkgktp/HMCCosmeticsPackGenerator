@@ -20,8 +20,21 @@ public class CustomModelDataGenerator {
     
     public CustomModelDataGenerator(HMCCosmeticsPackPlugin plugin) {
         this.plugin = plugin;
-        // REMOVED: Custom model data system - using fixed start value
-        this.currentModelData = new AtomicInteger(1000);
+        // Get custom model data start value from config
+        int startValue = plugin.getConfigManager().getCustomModelDataStart();
+        this.currentModelData = new AtomicInteger(startValue);
+    }
+    
+    /**
+     * Resets the generator state - clears all registered models and resets counter
+     * Should be called at the start of each generation process
+     */
+    public void reset() {
+        modelEntries.clear();
+        ModelEntry.clearCache();
+        int startValue = plugin.getConfigManager().getCustomModelDataStart();
+        this.currentModelData.set(startValue);
+        plugin.getLogger().info("CustomModelDataGenerator reset - starting from " + startValue);
     }
     
     /**
@@ -169,6 +182,10 @@ public class CustomModelDataGenerator {
             this.modelData = modelData;
             this.modelPath = modelPath;
             this.material = material;
+        }
+        
+        public static void clearCache() {
+            ENTRY_CACHE.clear();
         }
         
         public static ModelEntry create(int modelData, String modelPath, String material) {

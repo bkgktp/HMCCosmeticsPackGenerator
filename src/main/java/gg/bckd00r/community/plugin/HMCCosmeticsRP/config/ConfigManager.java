@@ -17,6 +17,10 @@ public class ConfigManager {
     private String copyToPath = "";
     private boolean transferGeneratedCosmeticYmlFiles = true;
     
+    // Model format settings
+    private boolean useItemModelComponent = true;
+    private int customModelDataStart = 1000;
+    
     // Bedrock Edition support
     private boolean bedrockEnabled  = false;
     private boolean bedrockSeparateDirectory = true;
@@ -39,6 +43,8 @@ public class ConfigManager {
         config.addDefault("resource-pack.namespace", namespace);
         config.addDefault("resource-pack.transfer-to-path", copyToPath);
         config.addDefault("settings.transfer-generated-cosmetic-yml-files", transferGeneratedCosmeticYmlFiles);
+        config.addDefault("settings.use-item-model-component", useItemModelComponent);
+        config.addDefault("settings.custom-model-data-start", customModelDataStart);
         
         // Add default materials configuration
         Map<String, String> defaultMaterialMap = new HashMap<>();
@@ -52,9 +58,9 @@ public class ConfigManager {
         
         config.addDefault("settings.default-materials", defaultMaterialMap);
         
-        // Add Bedrock Edition defaults
-        config.addDefault("bedrock.enabled", bedrockEnabled);
-        config.addDefault("bedrock.separate-directory", bedrockSeparateDirectory);
+        // DISABLED: Bedrock Edition support - keeping code but not adding to config
+        // config.addDefault("bedrock.enabled", bedrockEnabled);
+        // config.addDefault("bedrock.separate-directory", bedrockSeparateDirectory);
         
         config.options().copyDefaults(true);
         
@@ -76,9 +82,13 @@ public class ConfigManager {
         copyToPath = config.getString("resource-pack.transfer-to-path", "");
         transferGeneratedCosmeticYmlFiles = config.getBoolean("settings.transfer-generated-cosmetic-yml-files", true);
         
-        // Load Bedrock settings
-        bedrockEnabled = config.getBoolean("bedrock.enabled", false);
-        bedrockSeparateDirectory = config.getBoolean("bedrock.separate-directory", true);
+        // Load model format settings
+        useItemModelComponent = config.getBoolean("settings.use-item-model-component", true);
+        customModelDataStart = config.getInt("settings.custom-model-data-start", 1000);
+        
+        // DISABLED: Bedrock Edition support - always false
+        bedrockEnabled = false;
+        bedrockSeparateDirectory = true;
     }
 
     public void saveConfig() {
@@ -118,7 +128,29 @@ public class ConfigManager {
         return transferGeneratedCosmeticYmlFiles;
     }
     
-    // REMOVED: useItemModelComponent() method
+    /**
+     * Gets whether to use modern item model component system (1.21+)
+     * @return true if item model components should be generated, false for legacy custom model data
+     */
+    public boolean useItemModelComponent() {
+        return useItemModelComponent;
+    }
+    
+    /**
+     * Gets whether to use legacy custom model data system (pre-1.21)
+     * @return true if custom model data should be generated (inverse of useItemModelComponent)
+     */
+    public boolean useCustomModelData() {
+        return !useItemModelComponent;
+    }
+    
+    /**
+     * Gets the starting value for custom model data
+     * @return The starting custom model data value
+     */
+    public int getCustomModelDataStart() {
+        return customModelDataStart;
+    }
 
     /**
      * Gets the base output directory for models and textures

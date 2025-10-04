@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.HMCCosmeticsPackPlugin;
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.config.ConfigManager;
-import gg.bckd00r.community.plugin.HMCCosmeticsRP.converter.BBModelToJsonConvert;
+import gg.bckd00r.community.plugin.HMCCosmeticsRP.converter.java.BBModelToJsonConvert;
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.generator.CosmeticYMLGenerator;
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.util.FileUtils;
 import org.bukkit.ChatColor;
@@ -179,6 +179,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.GOLD + "=== Starting Clean Generation Process ===");
         sender.sendMessage(ChatColor.YELLOW + "Step 1: Cleaning old files...");
         
+        // Reset custom model data generator to clear any previous state
+        if (configManager.useCustomModelData()) {
+            plugin.getModelDataGenerator().reset();
+        }
+        
         String packId = configManager.getResourcePackId();
         File localOutputDir = new File(plugin.getDataFolder(), "output/" + packId);
         
@@ -326,8 +331,12 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         // Save all cosmetics to their respective type files
         ymlGenerator.saveAllCosmetics();
         
-        // REMOVED: Custom model data generation - now using item model components only
-        // All models now use the modern item model component system
+        // Generate custom model data files if enabled
+        if (configManager.useCustomModelData()) {
+            sender.sendMessage(ChatColor.YELLOW + "Generating legacy custom model data files...");
+            plugin.getModelDataGenerator().generateModelJsons();
+            sender.sendMessage(ChatColor.GREEN + "✓ Legacy custom model data files generated");
+        }
         
         sender.sendMessage(ChatColor.GREEN + "✓ Step 2 Complete: All files generated locally");
         sender.sendMessage(ChatColor.YELLOW + "Step 3: Copying changed files to target output...");

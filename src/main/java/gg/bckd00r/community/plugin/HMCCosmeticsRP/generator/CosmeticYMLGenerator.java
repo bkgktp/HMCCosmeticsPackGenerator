@@ -36,12 +36,35 @@ public class CosmeticYMLGenerator {
         config.set(fileName + ".firstperson-item.name", config.getString(fileName + ".item.name"));
         config.set(fileName + ".firstperson-item.lore", config.getStringList(fileName + ".item.lore"));
         
+        String firstpersonModelPath;
+        String firstpersonItemModelPath;
+        
         if (hasFirstperson) {
-            String firstpersonItemModelPath = namespace + ":" + fileName.toLowerCase() + "_firstperson";
-            config.set(fileName + ".firstperson-item.model-id", firstpersonItemModelPath);
+            firstpersonModelPath = namespace + ":item/" + fileName.toLowerCase() + "_firstperson";
+            firstpersonItemModelPath = namespace + ":" + fileName.toLowerCase() + "_firstperson";
+            
+            // Set model-id OR model-data based on config (not both)
+            if (plugin.getConfigManager().useItemModelComponent()) {
+                // Modern system: use item model component
+                config.set(fileName + ".firstperson-item.model-id", firstpersonItemModelPath);
+            } else {
+                // Legacy system: use custom model data
+                int customModelData = plugin.getModelDataGenerator().registerModel(material, firstpersonModelPath);
+                config.set(fileName + ".firstperson-item.model-data", customModelData);
+            }
         } else {
-            config.set(fileName + ".firstperson-item.model-id", itemModelPath);
+            // Use main model if no firstperson variant
+            if (plugin.getConfigManager().useItemModelComponent()) {
+                // Modern system: use same model-id as main item
+                config.set(fileName + ".firstperson-item.model-id", itemModelPath);
+            } else {
+                // Legacy system: use same model-data as main item
+                if (config.contains(fileName + ".item.model-data")) {
+                    config.set(fileName + ".firstperson-item.model-data", config.getInt(fileName + ".item.model-data"));
+                }
+            }
         }
+        
         config.set(fileName + ".firstperson-item.flags", config.getStringList(fileName + ".item.flags"));
         
         if (isPaintable) {
@@ -318,7 +341,15 @@ public class CosmeticYMLGenerator {
         config.set(fileName + ".item.lore", java.util.Arrays.asList("&7A custom " + type.toLowerCase() + " cosmetic."));
         config.set(fileName + ".item.flags", java.util.Arrays.asList("HIDE_ATTRIBUTES"));
         
-        config.set(fileName + ".item.model-id", itemModelPath);
+        // Set model-id OR model-data based on config (not both)
+        if (plugin.getConfigManager().useItemModelComponent()) {
+            // Modern system: use item model component
+            config.set(fileName + ".item.model-id", itemModelPath);
+        } else {
+            // Legacy system: use custom model data
+            int customModelData = plugin.getModelDataGenerator().registerModel(material, modelPath);
+            config.set(fileName + ".item.model-data", customModelData);
+        }
         
         addFirstPersonItem(config, fileName, type, modelPath, itemModelPath, hasFirstperson, isPaintable);
         
