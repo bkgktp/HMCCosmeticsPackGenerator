@@ -1,4 +1,3 @@
-debug: false
 # BBModel to Minecraft JSON Converter Configuration
 
 # Resource pack settings
@@ -12,20 +11,20 @@ resource-pack:
   # Custom path to copy the generated resource pack to (leave empty to disable)
   transfer-to-path: ''
 
-  # Bedrock Edition support
-  bedrock:
-    # Enable Bedrock resource pack generation alongside Java pack
-    enabled: true
-    
-    # Generate Bedrock pack in separate directory (adds "_bedrock" suffix)
-    separate-directory: true
-
 # Item model settings
 settings:
   # Whether to transfer generated cosmetic YML files to HMCCosmetics
   # true: Copy files to HMCCosmetics/cosmetics directory
   # false: Use senddata command to transfer
   transfer-generated-cosmetic-yml-files: true
+  
+  # Model format settings
+  # use-item-model-component: true = Use modern item model component system (1.21+)
+  # use-item-model-component: false = Use legacy custom model data system (pre-1.21)
+  use-item-model-component: true
+  
+  # Custom model data starting value (only used if use-item-model-component is false)
+  custom-model-data-start: 13000
   
   # Default materials for each cosmetic type
   default-materials:
