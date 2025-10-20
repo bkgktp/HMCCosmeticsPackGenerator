@@ -1,10 +1,11 @@
 plugins {
     id 'java'
     id("xyz.jpenilla.run-paper") version "2.3.1"
+    id("com.gradleup.shadow") version "8.3.3"
 }
 
 group = 'gg.bckd00r.community.plugin'
-version = '1.0.1'
+version = '1.0.2'
 
 repositories {
     mavenCentral()
@@ -31,7 +32,7 @@ tasks {
         // Configure the Minecraft version for our task.
         // This is the only required configuration besides applying the plugin.
         // Your plugin's jar (or shadowJar if present) will be used automatically.
-        minecraftVersion("1.21")
+        minecraftVersion("1.21.4")
     }
 }
 
@@ -61,4 +62,14 @@ processResources {
         expand props
     }
 }
+
+tasks.register('deployJar', Exec) {
+    dependsOn shadowJar
+    def jarFile = file("$buildDir/libs/${rootProject.name}-${version}-all.jar") //libs içindeki jarın ismi
+    def remoteUser = "root"
+    def remoteHost = "88.198.32.180"
+    def remotePath = "/root/hub/skyblock/plugins/"
+    commandLine 'scp', jarFile, "${remoteUser}@${remoteHost}:${remotePath}"
+}
+build.dependsOn shadowJar, deployJar
 
