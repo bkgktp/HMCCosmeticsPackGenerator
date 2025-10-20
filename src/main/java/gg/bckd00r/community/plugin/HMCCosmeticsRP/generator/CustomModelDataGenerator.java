@@ -34,7 +34,6 @@ public class CustomModelDataGenerator {
         ModelEntry.clearCache();
         int startValue = plugin.getConfigManager().getCustomModelDataStart();
         this.currentModelData.set(startValue);
-        plugin.getLogger().info("CustomModelDataGenerator reset - starting from " + startValue);
     }
     
     /**

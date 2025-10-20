@@ -1,6 +1,7 @@
 package gg.bckd00r.community.plugin.HMCCosmeticsRP;
 
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.config.DataManager;
+import gg.bckd00r.community.plugin.HMCCosmeticsRP.generator.MenuYMLGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.command.CommandManager;
@@ -8,6 +9,7 @@ import gg.bckd00r.community.plugin.HMCCosmeticsRP.config.ConfigManager;
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.generator.CustomModelDataGenerator;
 
 import java.io.File;
+import java.util.Set;
 
 public final class HMCCosmeticsPackPlugin extends JavaPlugin {
     private static HMCCosmeticsPackPlugin instance;
@@ -85,6 +87,35 @@ public final class HMCCosmeticsPackPlugin extends JavaPlugin {
      */
     public CustomModelDataGenerator getModelDataGenerator() {
         return modelDataGenerator;
+    }
+    
+    /**
+     * Generate menu files for cosmetics
+     * @param namespace The namespace for the cosmetics
+     * @param validCosmeticTypes Set of valid cosmetic types to generate menus for
+     * @param cosmeticsByType Map of cosmetic types to their item names
+     * @return true if menu files were generated successfully, false otherwise
+     */
+    public boolean generateMenus(String namespace, Set<String> validCosmeticTypes, java.util.Map<String, java.util.List<String>> cosmeticsByType) {
+        if (validCosmeticTypes == null || validCosmeticTypes.isEmpty()) {
+            getLogger().warning("No cosmetic types found to generate menus for");
+            return false;
+        }
+        
+        try {
+            MenuYMLGenerator menuGenerator = new MenuYMLGenerator(this, namespace, validCosmeticTypes);
+            boolean success = menuGenerator.generateMenuYMLFiles(cosmeticsByType);
+            if (success) {
+                getLogger().info("✓ Successfully generated menu files for " + namespace);
+            } else {
+                getLogger().warning("Failed to generate menu files for " + namespace);
+            }
+            return success;
+        } catch (Exception e) {
+            getLogger().severe("Failed to generate menu files: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
     
     /**

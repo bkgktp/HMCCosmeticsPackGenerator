@@ -9,64 +9,47 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class FileUtils {
     
-    /**
-     * Copies a directory and all its contents to a target directory
-     * @param source The source directory to copy
-     * @param target The target directory to copy to
-     * @throws IOException If an I/O error occurs
-     */
-    public static void copyDirectory(Path source, Path target) throws IOException {
-        Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                Path targetDir = target.resolve(source.relativize(dir));
-                Files.createDirectories(targetDir);
-                return FileVisitResult.CONTINUE;
+
+    public static void copyDirectory(File source, File target) throws IOException {
+        if (source.isDirectory()) {
+            if (!target.exists()) {
+                if (!target.mkdirs()) {
+                    throw new IOException("Failed to create directory: " + target.getAbsolutePath());
+                }
             }
 
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                Files.copy(file, target.resolve(source.relativize(file)), 
-                         StandardCopyOption.REPLACE_EXISTING);
-                return FileVisitResult.CONTINUE;
+            String[] files = source.list();
+            if (files != null) {
+                for (String fileName : files) {
+                    File sourceFile = new File(source, fileName);
+                    File targetFile = new File(target, fileName);
+                    copyDirectory(sourceFile, targetFile);
+                }
             }
-        });
+        } else {
+            File parentDir = target.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                if (!parentDir.mkdirs()) {
+                    throw new IOException("Failed to create parent directory: " + parentDir.getAbsolutePath());
+                }
+            }
+
+            Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
     }
     
     /**
-     * Copies the generated pack to a custom output path if specified in the config
-     * @param plugin The plugin instance
-     * @param packId The ID of the resource pack
-     * @return true if the copy was successful, false otherwise
+     * Deletes a directory recursively
      */
-    public static boolean copyPackToCustomPath(JavaPlugin plugin, String packId) {
-        try {
-            File outputDir = new File(plugin.getDataFolder(), "output/" + packId);
-            if (!outputDir.exists()) {
-                plugin.getLogger().warning("Output directory does not exist: " + outputDir.getAbsolutePath());
-                return false;
+    public static boolean deleteDirectory(File directory) {
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    deleteDirectory(file);
+                }
             }
-            
-            String customPath = plugin.getConfig().getString("output.custom-path");
-            if (customPath == null || customPath.isEmpty()) {
-                return false; // No custom path specified
-            }
-            
-            Path sourcePath = outputDir.toPath();
-            Path targetPath = Paths.get(customPath, packId);
-            
-            // Create parent directories if they don't exist
-            Files.createDirectories(targetPath.getParent());
-            
-            // Copy the directory
-            copyDirectory(sourcePath, targetPath);
-            
-            plugin.getLogger().info("Successfully copied pack to: " + targetPath);
-            return true;
-            
-        } catch (Exception e) {
-            plugin.getLogger().severe("Failed to copy pack to custom path: " + e.getMessage());
-            return false;
         }
+        return directory.delete();
     }
 }

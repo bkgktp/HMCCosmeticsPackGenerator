@@ -3,6 +3,11 @@ package gg.bckd00r.community.plugin.HMCCosmeticsRP.generator;
 import com.google.gson.*;
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.HMCCosmeticsPackPlugin;
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.config.DataManager;
+import gg.bckd00r.community.plugin.HMCCosmeticsRP.pack.PackUtils;
+import gg.bckd00r.community.plugin.HMCCosmeticsRP.util.FileUtils;
+import gg.bckd00r.community.plugin.HMCCosmeticsRP.util.TransferUtils;
+import gg.bckd00r.community.plugin.HMCCosmeticsRP.util.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -23,9 +28,22 @@ public class CosmeticYMLGenerator {
     private final String namespace;
     private final File tempDir;
     private final Plugin hmcPlugin;
-    private final Set<String> validCosmeticTypes = new HashSet<>(Arrays.asList(
+    public final Set<String> validCosmeticTypes = new HashSet<>(Arrays.asList(
         "helmet", "backpack", "chestplate", "leggings", "boots", "offhand", "balloon"
     ));
+
+    public CosmeticYMLGenerator(HMCCosmeticsPackPlugin plugin, String namespace) {
+        this.plugin = plugin;
+        this.namespace = namespace.toLowerCase();
+        this.tempDir = new File(plugin.getDataFolder(), "temp/" + namespace  + "_items"); //"temp/hmc_items"
+        this.hmcPlugin = plugin.getServer().getPluginManager().getPlugin("HMCCosmetics");
+
+        if (!tempDir.exists() && !tempDir.mkdirs()) {
+            plugin.getLogger().warning("Failed to create temp directory: " + tempDir.getAbsolutePath());
+        } else {
+            Utils.debugMessage(Bukkit.getConsoleSender(),"Using temp directory: " + tempDir.getAbsolutePath());
+        }
+    }
     
     private void addFirstPersonItem(FileConfiguration config, String fileName, String type, String modelPath, String itemModelPath, boolean hasFirstperson, boolean isPaintable) {
         if (!type.equalsIgnoreCase("BACKPACK")) {
@@ -36,29 +54,20 @@ public class CosmeticYMLGenerator {
         config.set(fileName + ".firstperson-item.name", config.getString(fileName + ".item.name"));
         config.set(fileName + ".firstperson-item.lore", config.getStringList(fileName + ".item.lore"));
         
-        String firstpersonModelPath;
-        String firstpersonItemModelPath;
-        
         if (hasFirstperson) {
-            firstpersonModelPath = namespace + ":item/" + fileName.toLowerCase() + "_firstperson";
-            firstpersonItemModelPath = namespace + ":" + fileName.toLowerCase() + "_firstperson";
+            String firstpersonModelPath = namespace + ":item/" + fileName.toLowerCase() + "_firstperson";
+            String firstpersonItemModelPath = namespace + ":" + fileName.toLowerCase() + "_firstperson";
             
-            // Set model-id OR model-data based on config (not both)
             if (plugin.getConfigManager().useItemModelComponent()) {
-                // Modern system: use item model component
                 config.set(fileName + ".firstperson-item.model-id", firstpersonItemModelPath);
             } else {
-                // Legacy system: use custom model data
                 int customModelData = plugin.getModelDataGenerator().registerModel(material, firstpersonModelPath);
                 config.set(fileName + ".firstperson-item.model-data", customModelData);
             }
         } else {
-            // Use main model if no firstperson variant
             if (plugin.getConfigManager().useItemModelComponent()) {
-                // Modern system: use same model-id as main item
                 config.set(fileName + ".firstperson-item.model-id", itemModelPath);
             } else {
-                // Legacy system: use same model-data as main item
                 if (config.contains(fileName + ".item.model-data")) {
                     config.set(fileName + ".firstperson-item.model-data", config.getInt(fileName + ".item.model-data"));
                 }
@@ -178,18 +187,6 @@ public class CosmeticYMLGenerator {
         }
     }
     
-    
-    private void copyBaseTemplateStructure(File outputDir) {
-        try {
-            File templateDir = new File(plugin.getDataFolder().getParentFile().getParentFile(), "src/main/resources/assets");
-            if (templateDir.exists()) {
-                copyDirectory(templateDir, new File(outputDir, "assets"));
-            }
-        } catch (Exception e) {
-        }
-    }
-    
-    
 
     private boolean isValidCosmeticType(String fileName) {
         if (fileName == null || fileName.isEmpty()) {
@@ -203,16 +200,6 @@ public class CosmeticYMLGenerator {
         }
         
         return false;
-    }
-
-    public CosmeticYMLGenerator(HMCCosmeticsPackPlugin plugin, String namespace) {
-        this.plugin = plugin;
-        this.namespace = namespace.toLowerCase();
-        this.tempDir = new File(plugin.getDataFolder(), "temp/" + this.namespace);
-        this.hmcPlugin = plugin.getServer().getPluginManager().getPlugin("HMCCosmetics");
-        
-        if (!tempDir.exists() && !tempDir.mkdirs()) {
-        }
     }
 
     private JsonObject loadAndProcessModel(File modelFile) throws IOException {
@@ -379,158 +366,72 @@ public class CosmeticYMLGenerator {
         }
         
         saveAllCosmetics();
-        
-        generatePackMcmeta();
-        
-        copyResourcePackToExternalPath();
-        
-        
+
+        PackUtils.generatePackMcmeta();
+        PackUtils.copyResourcePackToExternalPath();
         return type;
     }
-    
-    private void generatePackMcmeta() {
-        try {
-            LocalDate currentDate = LocalDate.now();
-            String formattedDate = currentDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
-            
-            JsonObject packMeta = new JsonObject();
-            JsonObject pack = new JsonObject();
-            JsonObject description = new JsonObject();
-            description.addProperty("text", "&dHMCCosmetics ResourcePack &8@bckd00r &6(" + formattedDate + ")");
-            
-            pack.add("description", description);
-            pack.addProperty("pack_format", 32);
-            
-            JsonObject supportedFormats = new JsonObject();
-            supportedFormats.addProperty("min_inclusive", 32);
-            supportedFormats.addProperty("max_inclusive", 46);
-            pack.add("supported_formats", supportedFormats);
-            
-            packMeta.add("pack", pack);
-            
-            File outputDir = new File(plugin.getDataFolder(), "output/" + plugin.getConfigManager().getResourcePackId());
-            File packMetaFile = new File(outputDir, "pack.mcmeta");
-            
-            if (!outputDir.exists()) {
-                outputDir.mkdirs();
-            }
-            try (FileWriter writer = new FileWriter(packMetaFile, StandardCharsets.UTF_8)) {
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                gson.toJson(packMeta, writer);
-            }
-            
-            copyPackIcon(outputDir);
-            
-        } catch (Exception e) {
-        }
-    }
-    
-    public void copyResourcePackToExternalPath() {
-        String copyToPath = plugin.getConfigManager().getCopyToPath();
-        if (copyToPath == null || copyToPath.trim().isEmpty()) {
-            return;
-        }
-        
-        try {
-            File sourceDir = new File(plugin.getDataFolder(), "output/" + plugin.getConfigManager().getResourcePackId());
-            File targetDir = new File(copyToPath, plugin.getConfigManager().getResourcePackId());
-            
-            if (!sourceDir.exists()) {
-                return;
-            }
-            
-            if (!targetDir.getParentFile().exists()) {
-                targetDir.getParentFile().mkdirs();
-            }
-            
-            if (targetDir.exists()) {
-                deleteDirectory(targetDir);
-            }
-            
-            copyDirectory(sourceDir, targetDir);
-            
-        } catch (Exception e) {
-        }
-    }
-    
-    
-    private void copyDirectory(File source, File target) throws IOException {
-        if (source.isDirectory()) {
-            if (!target.exists()) {
-                if (!target.mkdirs()) {
-                    throw new IOException("Failed to create directory: " + target.getAbsolutePath());
-                }
-            }
-            
-            String[] files = source.list();
-            if (files != null) {
-                for (String fileName : files) {
-                    File sourceFile = new File(source, fileName);
-                    File targetFile = new File(target, fileName);
-                    copyDirectory(sourceFile, targetFile);
-                }
-            }
-        } else {
-            File parentDir = target.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                if (!parentDir.mkdirs()) {
-                    throw new IOException("Failed to create parent directory: " + parentDir.getAbsolutePath());
-                }
-            }
-            
-            Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
-    }
-    
-    private void deleteDirectory(File directory) {
-        if (directory.isDirectory()) {
-            File[] files = directory.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    deleteDirectory(file);
-                }
-            }
-        }
-        directory.delete();
-    }
-    
-    private void copyPackIcon(File outputDir) {
-        try {
-            java.io.InputStream packIconStream = plugin.getResource("pack.png");
-            if (packIconStream == null) {
-                return;
-            }
-            
-            File packIconFile = new File(outputDir, "pack.png");
-            Files.copy(packIconStream, packIconFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            packIconStream.close();
-            
-        } catch (Exception e) {
-        }
-    }
-    
-    public void saveAllCosmetics() {
+
+    /**
+     * Saves all cosmetics and generates menu files
+     * @return true if all operations completed successfully, false otherwise
+     */
+    public boolean saveAllCosmetics() {
+        // First save cosmetics to temp directory
         saveCosmetics(tempDir, false);
         
-        boolean shouldTransferFiles = plugin.getConfigManager().shouldTransferGeneratedCosmeticYmlFiles();
+        // Build map of cosmetics by type for menu generation
+        Map<String, List<String>> cosmeticsByType = buildCosmeticsByTypeMap();
         
-        if (shouldTransferFiles) {
-            transferCosmeticFilesToHMCCosmetics();
-        } else {
-            executeSendDataCommand();
-        }
-    }
-    
-    private void transferCosmeticFilesToHMCCosmetics() {
-        if (hmcPlugin == null) {
-            return;
+        // Generate menu files based on valid cosmetic types
+        boolean menusGenerated = plugin.generateMenus(namespace, validCosmeticTypes, cosmeticsByType);
+        if (!menusGenerated) {
+            plugin.getLogger().warning("Failed to generate menu files");
         }
         
-        File cosmeticsDir = new File(hmcPlugin.getDataFolder(), "cosmetics/" + namespace);
-        saveCosmetics(cosmeticsDir, true);
+        // Transfer menu files from temp to HMCCosmetics
+        TransferUtils.transferMenuFilesToHMCCosmetics(plugin, namespace, hmcPlugin);
+        
+        // Handle file transfer based on configuration
+        if (plugin.getConfigManager().shouldTransferGeneratedCosmeticYmlFiles()) {
+            TransferUtils.transferCosmeticFilesToHMCCosmetics(plugin, namespace, hmcPlugin);
+        }
+        
+        return menusGenerated;
     }
     
-    private void executeSendDataCommand() {
+    /**
+     * Builds a map of cosmetics grouped by their type
+     */
+    private Map<String, List<String>> buildCosmeticsByTypeMap() {
+        Map<String, List<String>> result = new HashMap<>();
+        
+        Utils.debugMessage(Bukkit.getConsoleSender(),"Building cosmetics map from " + cosmeticsByType.size() + " types");
+        
+        for (Map.Entry<String, FileConfiguration> entry : cosmeticsByType.entrySet()) {
+            String type = entry.getKey();
+            FileConfiguration config = entry.getValue();
+            List<String> cosmetics = new ArrayList<>();
+            
+            Set<String> keys = config.getKeys(false);
+            Utils.debugMessage(Bukkit.getConsoleSender(),"Processing type: " + type + " with " + keys.size() + " keys");
+            
+            // Get all cosmetic keys from the config - they are the direct keys in the config
+            for (String key : keys) {
+                cosmetics.add(key);
+                Utils.debugMessage(Bukkit.getConsoleSender(),"  ✓ Added cosmetic to " + type + ": " + key);
+            }
+            
+            if (!cosmetics.isEmpty()) {
+                result.put(type, cosmetics);
+                Utils.debugMessage(Bukkit.getConsoleSender(),"✓ Type " + type + " has " + cosmetics.size() + " cosmetics");
+            } else {
+                Utils.debugMessage(Bukkit.getConsoleSender(),"⚠ Type " + type + " has no cosmetics");
+            }
+        }
+        
+        Utils.debugMessage(Bukkit.getConsoleSender(),"✓ Built cosmetics map with " + result.size() + " types");
+        return result;
     }
     
     private void saveCosmetics(File targetDir, boolean mergeExisting) {

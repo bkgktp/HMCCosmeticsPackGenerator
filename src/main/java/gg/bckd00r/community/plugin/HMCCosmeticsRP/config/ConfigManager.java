@@ -17,6 +17,9 @@ public class ConfigManager {
     private String copyToPath = "";
     private boolean transferGeneratedCosmeticYmlFiles = true;
     
+    // Debug mode
+    private boolean debugMode = false;
+    
     // Model format settings
     private boolean useItemModelComponent = true;
     private int customModelDataStart = 1000;
@@ -39,6 +42,7 @@ public class ConfigManager {
         config = plugin.getConfig();
 
         // Add default values if they don't exist
+        config.addDefault("debug", debugMode);
         config.addDefault("resource-pack.id", resourcePackId);
         config.addDefault("resource-pack.namespace", namespace);
         config.addDefault("resource-pack.transfer-to-path", copyToPath);
@@ -68,6 +72,7 @@ public class ConfigManager {
         plugin.saveConfig();
         
         // Load the values
+        debugMode = config.getBoolean("debug", false);
         resourcePackId = config.getString("resource-pack.id", resourcePackId);
         namespace = config.getString("resource-pack.namespace", namespace).toLowerCase();
         
@@ -101,6 +106,14 @@ public class ConfigManager {
 
     public String getNamespace() {
         return namespace;
+    }
+    
+    /**
+     * Gets whether debug mode is enabled
+     * @return true if debug mode is enabled, false otherwise
+     */
+    public boolean isDebugMode() {
+        return debugMode;
     }
     
     /**

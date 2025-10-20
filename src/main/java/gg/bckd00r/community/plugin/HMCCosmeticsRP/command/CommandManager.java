@@ -7,6 +7,7 @@ import gg.bckd00r.community.plugin.HMCCosmeticsRP.config.ConfigManager;
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.converter.java.BBModelToJsonConvert;
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.generator.CosmeticYMLGenerator;
 import gg.bckd00r.community.plugin.HMCCosmeticsRP.util.FileUtils;
+import gg.bckd00r.community.plugin.HMCCosmeticsRP.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -161,7 +162,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             if (fileName.endsWith("_firstperson")) {
                 String baseName = fileName.replace("_firstperson", "");
                 firstpersonModels.put(baseName, file);
-                sender.sendMessage(ChatColor.AQUA + "Found firstperson model: " + fileName + " for " + baseName);
+                Utils.debugMessage(sender, ChatColor.AQUA + "Found firstperson model: " + fileName + " for " + baseName);
             } else {
                 mainModels.put(fileName, file);
             }
@@ -244,7 +245,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                 // Check if this model has a firstperson version
                 File firstpersonFile = firstpersonModels.get(modelName);
                 if (firstpersonFile != null) {
-                    sender.sendMessage(ChatColor.GREEN + "Processing " + modelName + " with firstperson variant");
+                    Utils.debugMessage(sender, ChatColor.GREEN + "Processing " + modelName + " with firstperson variant");
                     
                     // Convert firstperson model too
                     String firstpersonJsonPath = localModelsPath + modelName + "_firstperson.json";
@@ -333,21 +334,21 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         
         // Generate custom model data files if enabled
         if (configManager.useCustomModelData()) {
-            sender.sendMessage(ChatColor.YELLOW + "Generating legacy custom model data files...");
+            Utils.debugMessage(sender, ChatColor.YELLOW + "Generating legacy custom model data files...");
             plugin.getModelDataGenerator().generateModelJsons();
-            sender.sendMessage(ChatColor.GREEN + "✓ Legacy custom model data files generated");
+            Utils.debugMessage(sender, ChatColor.GREEN + "✓ Legacy custom model data files generated");
         }
-        
-        sender.sendMessage(ChatColor.GREEN + "✓ Step 2 Complete: All files generated locally");
-        sender.sendMessage(ChatColor.YELLOW + "Step 3: Copying changed files to target output...");
+
+        Utils.debugMessage(sender, ChatColor.GREEN + "✓ Step 2 Complete: All files generated locally");
+        Utils.debugMessage(sender, ChatColor.YELLOW + "Step 3: Copying changed files to target output...");
         
         // Now copy only changed files from local output to final output
         int copiedFiles = copyChangedFilesToOutput(localOutputDir, sender);
         
         if (copiedFiles > 0) {
-            sender.sendMessage(ChatColor.GREEN + "✓ Step 3 Complete: Copied " + copiedFiles + " changed files to target output");
+            Utils.debugMessage(sender, ChatColor.GREEN + "✓ Step 3 Complete: Copied " + copiedFiles + " changed files to target output");
         } else {
-            sender.sendMessage(ChatColor.YELLOW + "✓ Step 3 Complete: No files needed copying (all up to date)");
+            Utils.debugMessage(sender, ChatColor.YELLOW + "✓ Step 3 Complete: No files needed copying (all up to date)");
         }
         
         // Send summary
@@ -377,10 +378,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         // Copy the generated pack to the transfer-to-path if specified
         // MOVED TO END: This ensures all files including firstperson namespace items are copied
         // Use the correct transfer method that uses 'resource-pack.transfer-to-path' config
-        ymlGenerator.copyResourcePackToExternalPath();
+        gg.bckd00r.community.plugin.HMCCosmeticsRP.pack.PackUtils.copyResourcePackToExternalPath();
         // Note: copyResourcePackToExternalPath() handles its own success/failure messaging
         
         sender.sendMessage(ChatColor.GREEN + "All cosmetics have been processed and saved successfully!");
+        sender.sendMessage(ChatColor.GREEN + "Please reinstall the Resource Pack.");
     }
     
     private void handleReload(CommandSender sender) {
